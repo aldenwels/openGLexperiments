@@ -4,9 +4,9 @@ Messing around with a template from my Brooklyn College Graphics Course https://
 
 ## Cloning and Building
 
-*git clone --recursive <THE_URL>
-*cd into Build directory
-*cmake -G "Xcode" ..
+*  git clone --recursive <THE_URL>
+* cd into Build directory
+* cmake -G "Xcode" .. (replace with whatever compiler you have if not on OSX)
 
 Going to make a specific branch for specific 'experiments/sketches' and leave the master as the bare bones "hello triangle" template.
 
