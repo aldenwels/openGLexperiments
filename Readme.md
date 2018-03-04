@@ -4,8 +4,13 @@ Messing around with a template from my Brooklyn College Graphics Course https://
 
 ## Cloning and Building
 
- git clone --recursive <THE_URL>
- cd into Build directory
- cmake -G "Xcode" ..
+*git clone --recursive <THE_URL>
+*cd into Build directory
+*cmake -G "Xcode" ..
+
+Going to make a specific branch for specific 'experiments/sketches' and leave the master as the bare bones "hello triangle" template.
+
+Starting to mess with GLSL stuff mainly from this great online book: https://thebookofshaders.com. The examples in the book are mainly for webGL, processing, and openFrameworks. So this repo could be of interest to anyone interested in doing similar things in "pure" openGL.
+
 
 
