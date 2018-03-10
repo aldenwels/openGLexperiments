@@ -5,33 +5,25 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Shader.h"
+
 // Standard Headers
 #include <cstdio>
 #include <cstdlib>
 
-const GLchar* vertexShaderSource =
-"#version 330 core\n"
-
-"layout (location = 0) in vec3 position;"
-
-"void main() {"
-"gl_Position = vec4(position.x, position.y, position.z, 1.0);"
-"}\0"
-;
-
-const GLchar* fragmentShaderSource =
-"#version 330 core\n"
-
-"out vec4 color;\n"
-
-"void main() {"
-"color = vec4(1.0f, 0.5f, 0.2f, 1.0f);"
-"}\0";
-
 GLfloat vertices[] = {
-  -0.5f,  -0.5f,  0.0f,
-  0.5f,  -0.5f,  0.0f,
-  0.0f,   0.5f,  0.0f
+  -1.0f,1.0f,0.0f, //top left corner
+  -1.0,-1.0f,0.0f, //bottom left corner
+   1.0f,-1.0f,0.0f, //bottom right
+    1.0f,1.0f,0.0f, //top right
+    0.0f,0.0f,0.0f //middle
+   
+};
+
+//indices used for EBO to avoid repeating vertices
+GLuint indices[] = {
+   0,1,2,
+    0,3,2
 };
 
 
@@ -60,15 +52,21 @@ int main(int argc, char * argv[]) {
   // vertex array object stores vertex attribute information
   // stores subsequent calls to glVertexAttribPointer, glEnableVertexAttribArray, vbos associated
   // with vertex attributes
-  GLuint VAO;
+  GLuint VAO, VBO, EBO;
   glGenVertexArrays(1, &VAO);
+  glGenBuffers(1,&VBO);
+  glGenBuffers(1,&EBO);
+    
   glBindVertexArray(VAO);
   
   // vertex buffer object stores large number of vertices on GPU
-  GLuint VBO; glGenBuffers(1, &VBO);    // generate buffer object and save its id
   glBindBuffer(GL_ARRAY_BUFFER, VBO);   // this is going to be your GL_ARRAY_BUFFER
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  // copy vertex data into buffer
   
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indices),indices,GL_STATIC_DRAW);
+    
+    
   // this is the first (0th) vertex attribute, has 3 components, is of type GL_FLOAT, should
   // not be normalized, each one is 3 floats apart, start at beginning of buffer (offset is 0)
   // this vertex attribute takes its data from the VBO currently bound to GL_ARRAY_BUFFER
@@ -80,25 +78,8 @@ int main(int argc, char * argv[]) {
   glBindBuffer(GL_ARRAY_BUFFER, 0); 
   glBindVertexArray(0);
   
-  
-  // shaders must be dynamically compiled at runtime
-  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
-  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
-  
-  // Link shaders
-  GLuint shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
-  
-  // Clean up: shader objects no longer needed after they are linked
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-  
+  Shader ourShader("/Users/pgringer/openGLexperiments/Glitter/Sources/shader.vs", "/Users/pgringer/openGLexperiments/Glitter/Sources/fragment.fs");
+
   // Rendering Loop
   while (glfwWindowShouldClose(mWindow) == false) {
     if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -109,12 +90,12 @@ int main(int argc, char * argv[]) {
     glClear(GL_COLOR_BUFFER_BIT);
     
     // Draw our first triangle
-    glUseProgram(shaderProgram);
+    ourShader.use();
     glBindVertexArray(VAO);     // bind the VAO we configured before
-    glDrawArrays(GL_TRIANGLES, 0, 6);   // draw the objects
-    glBindVertexArray(0);     // unbind the VAO
+    glDrawElements(GL_TRIANGLE_FAN, 9, GL_UNSIGNED_INT, 0);   // draw the objects
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // unbind the VAO
 
-    
     glfwSwapBuffers(mWindow);   // flip buffers and draw
     glfwPollEvents();           // check if any events are triggered, call corresponding callbacks
   }
@@ -122,6 +103,7 @@ int main(int argc, char * argv[]) {
   // Properly de-allocate all resources once they've outlived their purpose
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1,&EBO);
   glfwTerminate();
   
   return EXIT_SUCCESS;
